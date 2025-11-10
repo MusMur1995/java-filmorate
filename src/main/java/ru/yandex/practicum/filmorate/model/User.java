@@ -4,6 +4,9 @@ import lombok.Data;
 
 import java.time.LocalDate;
 
+/**
+ * User.
+ */
 @Data
 public class User {
     private Integer id;

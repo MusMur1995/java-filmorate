@@ -5,6 +5,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
+import ru.yandex.practicum.filmorate.exception.NotFoundException;
 import ru.yandex.practicum.filmorate.exception.ValidationException;
 import ru.yandex.practicum.filmorate.model.User;
 
@@ -51,7 +52,7 @@ public class UserController {
         }
 
         if (!users.containsKey(newUser.getId())) {
-            throw new ValidationException("Пользователь с id = " + newUser.getId() + " не найден");
+            throw new NotFoundException("Пользователь с id = " + newUser.getId() + " не найден");
         }
 
         boolean emailExists = users.values().stream()

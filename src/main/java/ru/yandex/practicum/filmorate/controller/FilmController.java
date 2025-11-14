@@ -4,6 +4,7 @@ import jakarta.validation.Valid;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
+import ru.yandex.practicum.filmorate.exception.NotFoundException;
 import ru.yandex.practicum.filmorate.exception.ValidationException;
 import ru.yandex.practicum.filmorate.model.Film;
 
@@ -47,7 +48,7 @@ public class FilmController {
         }
 
         if (!films.containsKey(newFilm.getId())) {
-            throw new ValidationException("Фильм с id = " + newFilm.getId() + " не найден");
+            throw new NotFoundException("Фильм с id = " + newFilm.getId() + " не найден");
         }
 
         films.put(newFilm.getId(), newFilm);

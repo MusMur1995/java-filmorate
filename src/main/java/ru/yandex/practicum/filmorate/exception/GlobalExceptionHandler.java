@@ -27,4 +27,10 @@ public class GlobalExceptionHandler {
     public Map<String, String> handleCustomValidationException(ValidationException ex) {
         return Map.of("error", ex.getMessage());
     }
+
+    @ExceptionHandler(NotFoundException.class)
+    @ResponseStatus(HttpStatus.NOT_FOUND) // 404
+    public Map<String, String> handleNotFoundException(NotFoundException ex) {
+        return Map.of("error", ex.getMessage());
+    }
 }

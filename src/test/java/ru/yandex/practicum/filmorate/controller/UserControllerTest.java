@@ -1,11 +1,10 @@
 package ru.yandex.practicum.filmorate.controller;
 
-import org.junit.jupiter.api.BeforeEach;
+import jakarta.validation.ConstraintViolationException;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
-import ru.yandex.practicum.filmorate.exception.ValidationException;
 import ru.yandex.practicum.filmorate.model.User;
 
 import java.time.LocalDate;
@@ -17,20 +16,21 @@ class UserControllerTest {
 
     @Autowired
     private UserController userController;
-    private User user;
 
-    @BeforeEach
-    void setUp() {
-        user = new User();
+    private User createTestUser() {
+        User user = new User();
         user.setEmail("test@example.com");
         user.setLogin("validlogin");
         user.setName("User Name");
         user.setBirthday(LocalDate.of(1990, 1, 1));
+        return user;
     }
 
     @Test
     @DisplayName("Создание пользователя с корректными данными")
     void createUser_WithValidData_ShouldSuccess() {
+        User user = createTestUser();
+
         User createdUser = userController.create(user);
 
         assertNotNull(createdUser.getId());
@@ -40,30 +40,38 @@ class UserControllerTest {
     @Test
     @DisplayName("Создание пользователя с пустым email")
     void createUser_WithEmptyEmail_ShouldThrowException() {
+        User user = createTestUser();
+
         user.setEmail("");
 
-        assertThrows(ValidationException.class, () -> userController.create(user));
+        assertThrows(ConstraintViolationException.class, () -> userController.create(user));
     }
 
     @Test
     @DisplayName("Создание пользователя с email без символа @")
     void createUser_WithEmailWithoutAtSymbol_ShouldThrowException() {
+        User user = createTestUser();
+
         user.setEmail("invalid-email");
 
-        assertThrows(ValidationException.class, () -> userController.create(user));
+        assertThrows(ConstraintViolationException.class, () -> userController.create(user));
     }
 
     @Test
     @DisplayName("Создание пользователя с логином содержащим пробелы")
     void createUser_WithLoginContainingSpaces_ShouldThrowException() {
+        User user = createTestUser();
+
         user.setLogin("login with spaces");
 
-        assertThrows(ValidationException.class, () -> userController.create(user));
+        assertThrows(ConstraintViolationException.class, () -> userController.create(user));
     }
 
     @Test
     @DisplayName("Создание пользователя с пустым именем - должно использоваться имя из логина")
     void createUser_WithEmptyName_ShouldUseLoginAsName() {
+        User user = createTestUser();
+
         user.setName("");
 
         User createdUser = userController.create(user);
@@ -74,14 +82,18 @@ class UserControllerTest {
     @Test
     @DisplayName("Создание пользователя с датой рождения в будущем")
     void createUser_WithFutureBirthday_ShouldThrowException() {
+        User user = createTestUser();
+
         user.setBirthday(LocalDate.now().plusDays(1));
 
-        assertThrows(ValidationException.class, () -> userController.create(user));
+        assertThrows(ConstraintViolationException.class, () -> userController.create(user));
     }
 
     @Test
     @DisplayName("Обновление пользователя с корректными данными")
     void updateUser_WithValidData_ShouldSuccess() {
+        User user = createTestUser();
+
         User createdUser = userController.create(user);
 
         User updateData = new User();
@@ -101,6 +113,6 @@ class UserControllerTest {
         User updateData = new User();
         updateData.setEmail("updated@example.com");
 
-        assertThrows(ValidationException.class, () -> userController.updateUser(updateData));
+        assertThrows(ConstraintViolationException.class, () -> userController.updateUser(updateData));
     }
 }

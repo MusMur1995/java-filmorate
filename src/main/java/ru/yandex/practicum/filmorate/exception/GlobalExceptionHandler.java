@@ -29,8 +29,17 @@ public class GlobalExceptionHandler {
     }
 
     @ExceptionHandler(NotFoundException.class)
-    @ResponseStatus(HttpStatus.NOT_FOUND) // 404
+    @ResponseStatus(HttpStatus.NOT_FOUND)
     public Map<String, String> handleNotFoundException(NotFoundException ex) {
         return Map.of("error", ex.getMessage());
+    }
+
+    @ExceptionHandler(Exception.class)
+    @ResponseStatus(HttpStatus.INTERNAL_SERVER_ERROR)
+    public Map<String, String> handleAllExceptions(Exception ex) {
+        return Map.of(
+                "error", "Внутренняя ошибка сервера",
+                "message", ex.getMessage()
+        );
     }
 }

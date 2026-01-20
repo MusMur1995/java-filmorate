@@ -23,8 +23,8 @@ public class UserService {
         return userStorage.create(user);
     }
 
-    private void checkUserExists(Integer userId) {
-        userStorage.findById(userId)
+    private User getUser(Integer userId) {
+        return userStorage.findById(userId)
                 .orElseThrow(() -> new NotFoundException("Пользователь с id = " + userId + " не найден"));
     }
 
@@ -32,7 +32,7 @@ public class UserService {
         if (newUser.getId() == null) {
             throw new ValidationException("Id должен быть указан");
         }
-        checkUserExists(newUser.getId());
+        getUser(newUser.getId());
         return userStorage.update(newUser);
     }
 
@@ -45,25 +45,25 @@ public class UserService {
         if (userId.equals(friendId)) {
             throw new ValidationException("Нельзя добавить себя в друзья");
         }
-        checkUserExists(userId);
-        checkUserExists(friendId);
+        getUser(userId);
+        getUser(friendId);
         userStorage.addFriend(userId, friendId);
     }
 
     public void removeFriend(Integer userId, Integer friendId) {
-        checkUserExists(userId);
-        checkUserExists(friendId);
+        getUser(userId);
+        getUser(friendId);
         userStorage.removeFriend(userId, friendId);
     }
 
     public List<User> getFriends(Integer userId) {
-        checkUserExists(userId);
+        getUser(userId);
         return userStorage.getFriends(userId);
     }
 
     public List<User> getCommonFriends(Integer id, Integer otherId) {
-        checkUserExists(id);
-        checkUserExists(otherId);
+        getUser(id);
+        getUser(otherId);
         return userStorage.getCommonFriends(id, otherId);
     }
 }

@@ -6,6 +6,7 @@ import org.springframework.stereotype.Service;
 import ru.yandex.practicum.filmorate.exception.NotFoundException;
 import ru.yandex.practicum.filmorate.exception.ValidationException;
 import ru.yandex.practicum.filmorate.model.Film;
+import ru.yandex.practicum.filmorate.model.User;
 import ru.yandex.practicum.filmorate.storage.FilmStorage;
 import ru.yandex.practicum.filmorate.storage.UserStorage;
 
@@ -18,13 +19,13 @@ public class FilmService {
     private final FilmStorage filmStorage;
     private final UserStorage userStorage;
 
-    private void checkUserExists(Integer userId) {
-        userStorage.findById(userId)
+    private User getUser(Integer userId) {
+        return userStorage.findById(userId)
                 .orElseThrow(() -> new NotFoundException("Пользователь с id = " + userId + " не найден"));
     }
 
-    private void checkFilmExists(Integer filmId) {
-        filmStorage.findById(filmId)
+    private Film getFilm(Integer filmId) {
+        return filmStorage.findById(filmId)
                 .orElseThrow(() -> new NotFoundException("Фильм с id = " + filmId + " не найден"));
     }
 
@@ -36,7 +37,7 @@ public class FilmService {
         if (film.getId() == null) {
             throw new ValidationException("Id должен быть указан");
         }
-        checkFilmExists(film.getId());
+        getFilm(film.getId());
         return filmStorage.update(film);
     }
 
@@ -45,14 +46,14 @@ public class FilmService {
     }
 
     public void addLike(Integer filmId, Integer userId) {
-        checkUserExists(userId);
-        checkFilmExists(filmId);
+        getUser(userId);
+        getFilm(filmId);
         filmStorage.addLike(filmId, userId);
     }
 
     public void deleteLike(Integer filmId, Integer userId) {
-        checkUserExists(userId);
-        checkFilmExists(filmId);
+        getUser(userId);
+        getFilm(filmId);
         filmStorage.removeLike(filmId, userId);
     }
 

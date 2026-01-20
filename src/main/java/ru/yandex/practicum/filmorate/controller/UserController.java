@@ -21,17 +21,11 @@ public class UserController {
 
     private final UserService userService;
 
-//    @Autowired
-//    public UserController(UserService userService) {
-//        this.userService = userService;
-//    }
-
     @PostMapping
     public User create(@Valid @RequestBody User user) {
         log.info("Получен запрос на создание пользователя: {}", user.getEmail());
         return userService.create(user);
     }
-
 
     @PutMapping
     public User updateUser(@Valid @RequestBody User newUser) {

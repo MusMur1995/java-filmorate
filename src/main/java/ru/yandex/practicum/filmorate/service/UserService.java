@@ -1,8 +1,10 @@
 package ru.yandex.practicum.filmorate.service;
 
-import org.springframework.beans.factory.annotation.Autowired;
+import io.micrometer.common.util.StringUtils;
+import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import ru.yandex.practicum.filmorate.exception.NotFoundException;
+import ru.yandex.practicum.filmorate.exception.ValidationException;
 import ru.yandex.practicum.filmorate.model.User;
 import ru.yandex.practicum.filmorate.storage.UserStorage;
 
@@ -10,53 +12,58 @@ import java.util.Collection;
 import java.util.List;
 
 @Service
+@RequiredArgsConstructor
 public class UserService {
     private final UserStorage userStorage;
 
-    @Autowired
-    public UserService(UserStorage userStorage) {
-        this.userStorage = userStorage;
-    }
-
     public User create(User user) {
+        if (StringUtils.isBlank(user.getName())) {
+            user.setName(user.getLogin());
+        }
         return userStorage.create(user);
     }
 
+    private void checkUserExists(Integer userId) {
+        userStorage.findById(userId)
+                .orElseThrow(() -> new NotFoundException("Пользователь с id = " + userId + " не найден"));
+    }
+
     public User update(User newUser) {
+        if (newUser.getId() == null) {
+            throw new ValidationException("Id должен быть указан");
+        }
+        checkUserExists(newUser.getId());
         return userStorage.update(newUser);
     }
 
-    public Collection<User> getAllUser() {
+    public Collection<User> getAllUsers() {
         return userStorage.findAll();
     }
 
+
     public void addFriend(Integer userId, Integer friendId) {
-        userStorage.findById(userId)
-                .orElseThrow(() -> new NotFoundException("Пользователь с id = " + userId + " не найден"));
-        userStorage.findById(friendId)
-                .orElseThrow(() -> new NotFoundException("Пользователь с id = " + friendId + " не найден"));
+        if (userId.equals(friendId)) {
+            throw new ValidationException("Нельзя добавить себя в друзья");
+        }
+        checkUserExists(userId);
+        checkUserExists(friendId);
         userStorage.addFriend(userId, friendId);
     }
 
     public void removeFriend(Integer userId, Integer friendId) {
-        userStorage.findById(userId)
-                .orElseThrow(() -> new NotFoundException("Пользователь с id = " + userId + " не найден"));
-        userStorage.findById(friendId)
-                .orElseThrow(() -> new NotFoundException("Пользователь с id = " + friendId + " не найден"));
+        checkUserExists(userId);
+        checkUserExists(friendId);
         userStorage.removeFriend(userId, friendId);
     }
 
     public List<User> getFriends(Integer userId) {
-        userStorage.findById(userId)
-                .orElseThrow(() -> new NotFoundException("Пользователь с id = " + userId + " не найден"));
+        checkUserExists(userId);
         return userStorage.getFriends(userId);
     }
 
     public List<User> getCommonFriends(Integer id, Integer otherId) {
-        userStorage.findById(id)
-                .orElseThrow(() -> new NotFoundException("Пользователь с id = " + id + " не найден"));
-        userStorage.findById(otherId)
-                .orElseThrow(() -> new NotFoundException("Пользователь с id = " + otherId + " не найден"));
+        checkUserExists(id);
+        checkUserExists(otherId);
         return userStorage.getCommonFriends(id, otherId);
     }
 }

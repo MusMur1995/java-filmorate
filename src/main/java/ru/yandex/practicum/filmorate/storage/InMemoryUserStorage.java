@@ -1,8 +1,6 @@
 package ru.yandex.practicum.filmorate.storage;
 
-import org.apache.commons.lang3.StringUtils;
 import org.springframework.stereotype.Component;
-import ru.yandex.practicum.filmorate.exception.NotFoundException;
 import ru.yandex.practicum.filmorate.exception.ValidationException;
 import ru.yandex.practicum.filmorate.model.User;
 
@@ -16,9 +14,6 @@ public class InMemoryUserStorage implements UserStorage {
 
     @Override
     public User create(User user) {
-        if (StringUtils.isBlank(user.getName())) {
-            user.setName(user.getLogin());
-        }
         user.setId(getNextId());
         users.put(user.getId(), user);
         return user;
@@ -35,13 +30,6 @@ public class InMemoryUserStorage implements UserStorage {
 
     @Override
     public User update(User newUser) {
-        if (newUser.getId() == null) {
-            throw new ValidationException("Id должен быть указан");
-        }
-
-        if (!users.containsKey(newUser.getId())) {
-            throw new NotFoundException("Пользователь с id = " + newUser.getId() + " не найден");
-        }
 
         boolean emailExists = users.values().stream()
                 .anyMatch(existingUser ->
@@ -69,18 +57,6 @@ public class InMemoryUserStorage implements UserStorage {
 
     @Override
     public void addFriend(Integer userId, Integer friendId) {
-        if (!users.containsKey(userId)) {
-            throw new NotFoundException("Пользователь с id = " + userId + " не найден");
-        }
-
-        if (!users.containsKey(friendId)) {
-            throw new NotFoundException("Пользователь с id = " + friendId + " не найден");
-        }
-
-        if (userId.equals(friendId)) {
-            throw new ValidationException("Нельзя добавить себя в друзья");
-        }
-
         Set<Integer> userFriends = friends.computeIfAbsent(userId, k -> new HashSet<>());
         userFriends.add(friendId);
 
@@ -90,15 +66,6 @@ public class InMemoryUserStorage implements UserStorage {
 
     @Override
     public void removeFriend(Integer userId, Integer friendId) {
-
-        if (!users.containsKey(userId)) {
-            throw new NotFoundException("Пользователь с id = " + userId + " не найден");
-        }
-
-        if (!users.containsKey(friendId)) {
-            throw new NotFoundException("Пользователь с id = " + friendId + " не найден");
-        }
-
         Set<Integer> userFriends = friends.get(userId);
 
         if (userFriends == null || !userFriends.contains(friendId)) {
@@ -115,9 +82,6 @@ public class InMemoryUserStorage implements UserStorage {
 
     @Override
     public List<User> getFriends(Integer userId) {
-        if (!users.containsKey(userId)) {
-            throw new NotFoundException("Пользователь с id = " + userId + " не найден");
-        }
 
         Set<Integer> friendsIds = friends.get(userId);
 

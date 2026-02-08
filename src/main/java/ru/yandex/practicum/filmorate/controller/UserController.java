@@ -1,77 +1,66 @@
 package ru.yandex.practicum.filmorate.controller;
 
 import jakarta.validation.Valid;
+import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.apache.commons.lang3.StringUtils;
+import org.springframework.http.HttpStatus;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
-import ru.yandex.practicum.filmorate.exception.NotFoundException;
-import ru.yandex.practicum.filmorate.exception.ValidationException;
 import ru.yandex.practicum.filmorate.model.User;
+import ru.yandex.practicum.filmorate.service.UserService;
 
 import java.util.Collection;
-import java.util.HashMap;
-import java.util.Map;
+import java.util.List;
 
 @Slf4j
 @RestController
+@RequiredArgsConstructor
 @RequestMapping("/users")
 @Validated
 public class UserController {
 
-    private final Map<Integer, User> users = new HashMap<>();
+    private final UserService userService;
 
     @PostMapping
     public User create(@Valid @RequestBody User user) {
         log.info("Получен запрос на создание пользователя: {}", user.getEmail());
-
-        if (StringUtils.isBlank(user.getName())) {
-            user.setName(user.getLogin());
-        }
-
-        user.setId(getNextId());
-        users.put(user.getId(), user);
-        return user;
-    }
-
-    private int getNextId() {
-        int currentMaxId = users.keySet()
-                .stream()
-                .mapToInt(id -> id)
-                .max()
-                .orElse(0);
-        return ++currentMaxId;
+        return userService.create(user);
     }
 
     @PutMapping
     public User updateUser(@Valid @RequestBody User newUser) {
         log.info("Получен запрос на обновление пользователя с ID: {}", newUser.getId());
-
-        if (newUser.getId() == null) {
-            throw new ValidationException("Id должен быть указан");
-        }
-
-        if (!users.containsKey(newUser.getId())) {
-            throw new NotFoundException("Пользователь с id = " + newUser.getId() + " не найден");
-        }
-
-        boolean emailExists = users.values().stream()
-                .anyMatch(existingUser ->
-                        existingUser.getEmail().equals(newUser.getEmail()) &&
-                                !existingUser.getId().equals(newUser.getId())
-                );
-
-        if (emailExists) {
-            throw new ValidationException("Этот email уже используется");
-        }
-
-        users.put(newUser.getId(), newUser);
-        return newUser;
+        return userService.update(newUser);
     }
 
     @GetMapping
     public Collection<User> getAllUsers() {
-        log.info("Получен запрос на получение всех пользователей. Количество пользователей: {}", users.size());
-        return users.values();
+        log.info("Получен запрос на получение всех пользователей.");
+        return userService.getAllUsers();
+    }
+
+    @PutMapping("/{id}/friends/{friendId}")
+    @ResponseStatus(HttpStatus.OK)
+    public void addFriend(@PathVariable Integer id, @PathVariable Integer friendId) {
+        log.info("Получен запрос на добавление в друзья к пользователю {} от пользователя {}", id, friendId);
+        userService.addFriend(id, friendId);
+    }
+
+    @DeleteMapping("/{id}/friends/{friendId}")
+    public void deleteFriend(@PathVariable Integer id, @PathVariable Integer friendId) {
+        log.info("Получен запрос на удаление пользователя {} из списка друзей пользователя {}", friendId, id);
+        userService.removeFriend(id, friendId);
+    }
+
+    @GetMapping("/{id}/friends")
+    public List<User> getFriends(@PathVariable Integer id) {
+        log.info("Получен запрос на получение друзей пользователя {}", id);
+        return userService.getFriends(id);
+    }
+
+    @GetMapping("/{id}/friends/common/{otherId}")
+    public List<User> getCommonFriends(@PathVariable Integer id, @PathVariable Integer otherId) {
+        log.info("Получен запрос на получение общих друзей пользователя {} с пользователем {}", id, otherId);
+        return userService.getCommonFriends(id, otherId);
     }
 }

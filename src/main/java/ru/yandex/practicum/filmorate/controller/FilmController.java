@@ -5,7 +5,7 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
-import ru.yandex.practicum.filmorate.model.film.Film;
+import ru.yandex.practicum.filmorate.model.Film;
 import ru.yandex.practicum.filmorate.service.FilmService;
 
 import java.util.Collection;
@@ -54,11 +54,5 @@ public class FilmController {
             @RequestParam(defaultValue = "10", required = false) Integer count) {
         log.info("Получен запрос на получение {} популярных фильмов", count);
         return filmService.getPopularFilms(count);
-    }
-
-    @GetMapping("/{id}")
-    public Film getFilmById(@PathVariable Integer id) {
-        log.info("Получен запрос на получение фильма с ID: {}", id);
-        return filmService.getFilmById(id);
     }
 }

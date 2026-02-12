@@ -5,8 +5,7 @@ import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
-import ru.yandex.practicum.filmorate.model.film.Film;
-import ru.yandex.practicum.filmorate.model.film.Mpa;
+import ru.yandex.practicum.filmorate.model.Film;
 
 import java.time.LocalDate;
 
@@ -24,9 +23,6 @@ class FilmControllerTest {
         film.setDescription("Film Description");
         film.setReleaseDate(LocalDate.of(2000, 1, 1));
         film.setDuration(120);
-        Mpa mpa = new Mpa();
-        mpa.setId(1); // G рейтинг
-        film.setMpa(mpa);
         return film;
     }
 

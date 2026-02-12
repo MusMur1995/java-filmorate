@@ -5,7 +5,7 @@ import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
-import ru.yandex.practicum.filmorate.model.User;
+import ru.yandex.practicum.filmorate.model.user.User;
 
 import java.time.LocalDate;
 
@@ -93,17 +93,18 @@ class UserControllerTest {
     @DisplayName("Обновление пользователя с корректными данными")
     void updateUser_WithValidData_ShouldSuccess() {
         User user = createTestUser();
-
         User createdUser = userController.create(user);
 
         User updateData = new User();
         updateData.setId(createdUser.getId());
-        updateData.setEmail("updated@example.com");
+        updateData.setEmail("updated_" + System.currentTimeMillis() + "@example.com"); // Уникальный email
         updateData.setLogin("updatedlogin");
+        updateData.setName(createdUser.getName());
+        updateData.setBirthday(createdUser.getBirthday());
 
         User updatedUser = userController.updateUser(updateData);
 
-        assertEquals("updated@example.com", updatedUser.getEmail());
+        assertEquals(updateData.getEmail(), updatedUser.getEmail());
         assertEquals("updatedlogin", updatedUser.getLogin());
     }
 

@@ -22,7 +22,7 @@ import java.util.*;
 @Repository
 @Primary
 @RequiredArgsConstructor
-public class UserDbStorage implements UserStorage{
+public class UserDbStorage implements UserStorage {
 
     private final JdbcTemplate jdbcTemplate;
     private final UserRowMapper userRowMapper;

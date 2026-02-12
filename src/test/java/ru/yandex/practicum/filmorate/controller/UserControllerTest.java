@@ -100,6 +100,8 @@ class UserControllerTest {
         updateData.setId(createdUser.getId());
         updateData.setEmail("updated@example.com");
         updateData.setLogin("updatedlogin");
+        updateData.setName("Updated Name");
+        updateData.setBirthday(createdUser.getBirthday());
 
         User updatedUser = userController.updateUser(updateData);
 

@@ -5,7 +5,7 @@ import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
-import ru.yandex.practicum.filmorate.model.User;
+import ru.yandex.practicum.filmorate.model.user.User;
 
 import java.time.LocalDate;
 
@@ -100,6 +100,8 @@ class UserControllerTest {
         updateData.setId(createdUser.getId());
         updateData.setEmail("updated@example.com");
         updateData.setLogin("updatedlogin");
+        updateData.setName("Updated Name");
+        updateData.setBirthday(createdUser.getBirthday());
 
         User updatedUser = userController.updateUser(updateData);
 

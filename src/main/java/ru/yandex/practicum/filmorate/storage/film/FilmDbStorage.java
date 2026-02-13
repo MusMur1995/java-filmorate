@@ -17,10 +17,8 @@ import ru.yandex.practicum.filmorate.model.film.Genre;
 import java.sql.Date;
 import java.sql.PreparedStatement;
 import java.sql.Statement;
-import java.util.Collection;
-import java.util.List;
-import java.util.Objects;
-import java.util.Optional;
+import java.util.*;
+import java.util.stream.Collectors;
 
 @Slf4j
 @Repository
@@ -112,10 +110,12 @@ public class FilmDbStorage implements FilmStorage {
 
         List<Film> films = jdbcTemplate.query(sql, filmRowMapper);
 
-        films.forEach(film -> {
-            loadGenres(film);
-            loadLikes(film);
-        });
+        if (!films.isEmpty()) {
+
+            loadGenres(films);
+
+            loadAllLikes(films);
+        }
 
         return films;
     }
@@ -131,10 +131,8 @@ public class FilmDbStorage implements FilmStorage {
         try {
             Film film = jdbcTemplate.queryForObject(sql, filmRowMapper, id);
 
-            if (film != null) {
-                loadGenres(film);
-                loadLikes(film);
-            }
+            loadGenresForFilm(film);
+            loadLikesForFilm(film);
 
             return Optional.ofNullable(film);
         } catch (EmptyResultDataAccessException e) {
@@ -142,7 +140,7 @@ public class FilmDbStorage implements FilmStorage {
         }
     }
 
-    private void loadGenres(Film film) {
+    private void loadGenresForFilm(Film film) {
         String sql = "SELECT g.* FROM film_genres fg " +
                 "JOIN genres g ON fg.genre_id = g.id " +
                 "WHERE fg.film_id = ? " +
@@ -159,7 +157,7 @@ public class FilmDbStorage implements FilmStorage {
         film.getGenres().addAll(genres);
     }
 
-    private void loadLikes(Film film) {
+    private void loadLikesForFilm(Film film) {
         String sql = "SELECT user_id FROM likes WHERE film_id = ?";
 
         List<Integer> likes = jdbcTemplate.query(sql,
@@ -168,6 +166,65 @@ public class FilmDbStorage implements FilmStorage {
 
         film.getLikes().clear();
         film.getLikes().addAll(likes);
+    }
+
+    private void loadGenres(List<Film> films) {
+
+        String filmIds = films.stream()
+                .map(film -> String.valueOf(film.getId()))
+                .collect(Collectors.joining(","));
+
+        String sql = "SELECT fg.film_id, g.* FROM film_genres fg " +
+                "JOIN genres g ON fg.genre_id = g.id " +
+                "WHERE fg.film_id IN (" + filmIds + ") " +
+                "ORDER BY g.id";
+
+        Map<Integer, List<Genre>> genresByFilm = jdbcTemplate.query(sql, rs -> {
+            Map<Integer, List<Genre>> map = new HashMap<>();
+            while (rs.next()) {
+                int filmId = rs.getInt("film_id");
+                Genre genre = Genre.builder()
+                        .id(rs.getInt("id"))
+                        .name(rs.getString("genre_name"))
+                        .build();
+
+                map.computeIfAbsent(filmId, k -> new ArrayList<>()).add(genre);
+            }
+            return map;
+        });
+
+        films.forEach(film -> {
+            List<Genre> genres = genresByFilm.getOrDefault(film.getId(), Collections.emptyList());
+            film.getGenres().clear();
+            film.getGenres().addAll(genres);
+        });
+    }
+
+    private void loadAllLikes(List<Film> films) {
+
+        String filmIds = films.stream()
+                .map(film -> String.valueOf(film.getId()))
+                .collect(Collectors.joining(","));
+
+        String sql = "SELECT film_id, user_id FROM likes " +
+                "WHERE film_id IN (" + filmIds + ")";
+
+        Map<Integer, List<Integer>> likesByFilm = jdbcTemplate.query(sql, rs -> {
+            Map<Integer, List<Integer>> map = new HashMap<>();
+            while (rs.next()) {
+                int filmId = rs.getInt("film_id");
+                int userId = rs.getInt("user_id");
+
+                map.computeIfAbsent(filmId, k -> new ArrayList<>()).add(userId);
+            }
+            return map;
+        });
+
+        films.forEach(film -> {
+            List<Integer> likes = likesByFilm.getOrDefault(film.getId(), Collections.emptyList());
+            film.getLikes().clear();
+            film.getLikes().addAll(likes);
+        });
     }
 
     @Override
@@ -214,17 +271,15 @@ public class FilmDbStorage implements FilmStorage {
                 "FROM films f " +
                 "LEFT JOIN mpa_rating m ON f.mpa_id = m.id " +
                 "LEFT JOIN likes l ON f.id = l.film_id " +
-                "GROUP BY f.id, m.mpa_name " +
+                "GROUP BY f.id, f.name, f.description, f.releaseDate, f.duration, f.mpa_id, m.mpa_name " +
                 "ORDER BY likes_count DESC " +
                 "LIMIT ?";
 
         List<Film> films = jdbcTemplate.query(sql, filmRowMapper, count);
 
-        films.forEach(film -> {
-            loadGenres(film);
-            loadLikes(film);
-        });
-
+        if (!films.isEmpty()) {
+            loadGenres(films);
+        }
         return films;
     }
 

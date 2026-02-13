@@ -4,7 +4,7 @@ CREATE TABLE IF NOT EXISTS mpa_rating
 (
     id       INTEGER PRIMARY KEY,
     mpa_name VARCHAR(10)
-    );
+);
 
 -- Создание таблицы users
 CREATE TABLE IF NOT EXISTS users
@@ -14,14 +14,14 @@ CREATE TABLE IF NOT EXISTS users
     login    VARCHAR(255) NOT NULL,
     name     VARCHAR(255),
     birthday DATE         NOT NULL
-    );
+);
 
 -- Создание таблицы genres
 CREATE TABLE IF NOT EXISTS genres
 (
     id         INTEGER PRIMARY KEY,
     genre_name VARCHAR(255) NOT NULL
-    );
+);
 
 -- Создание таблицы films
 CREATE TABLE IF NOT EXISTS films
@@ -32,7 +32,7 @@ CREATE TABLE IF NOT EXISTS films
     releaseDate DATE         NOT NULL,
     duration    INTEGER      NOT NULL,
     mpa_id      INTEGER      REFERENCES mpa_rating (id) ON DELETE SET NULL
-    );
+);
 
 -- Создание таблицы film_genres (связь многие-ко-многим между films и genres)
 CREATE TABLE IF NOT EXISTS film_genres
@@ -40,7 +40,7 @@ CREATE TABLE IF NOT EXISTS film_genres
     film_id  INTEGER NOT NULL REFERENCES films (id) ON DELETE CASCADE,
     genre_id INTEGER NOT NULL REFERENCES genres (id) ON DELETE CASCADE,
     PRIMARY KEY (film_id, genre_id)
-    );
+);
 
 -- Создание таблицы friendship (дружба между пользователями)
 CREATE TABLE IF NOT EXISTS friendship
@@ -48,7 +48,7 @@ CREATE TABLE IF NOT EXISTS friendship
     user_id   INTEGER NOT NULL REFERENCES users (id) ON DELETE CASCADE,
     friend_id INTEGER NOT NULL REFERENCES users (id) ON DELETE CASCADE,
     PRIMARY KEY (user_id, friend_id)
-    );
+);
 
 -- Создание таблицы likes (лайки фильмов пользователями)
 CREATE TABLE IF NOT EXISTS likes
@@ -56,7 +56,7 @@ CREATE TABLE IF NOT EXISTS likes
     film_id INTEGER NOT NULL REFERENCES films (id) ON DELETE CASCADE,
     user_id INTEGER NOT NULL REFERENCES users (id) ON DELETE CASCADE,
     PRIMARY KEY (film_id, user_id)
-    );
+);
 
 -- Создание индексов для ускорения поиска
 CREATE INDEX IF NOT EXISTS idx_films_mpa_id ON films (mpa_id);

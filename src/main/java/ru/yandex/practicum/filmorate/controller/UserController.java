@@ -63,10 +63,4 @@ public class UserController {
         log.info("Получен запрос на получение общих друзей пользователя {} с пользователем {}", id, otherId);
         return userService.getCommonFriends(id, otherId);
     }
-
-    @GetMapping("/{id}")
-    public User getUserById(@PathVariable Integer id) {
-        log.info("Получен запрос на получение пользователя с ID: {}", id);
-        return userService.getUserById(id);
-    }
 }

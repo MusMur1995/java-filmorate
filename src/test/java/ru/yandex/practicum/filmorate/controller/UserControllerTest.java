@@ -93,19 +93,18 @@ class UserControllerTest {
     @DisplayName("Обновление пользователя с корректными данными")
     void updateUser_WithValidData_ShouldSuccess() {
         User user = createTestUser();
-
         User createdUser = userController.create(user);
 
         User updateData = new User();
         updateData.setId(createdUser.getId());
-        updateData.setEmail("updated@example.com");
+        updateData.setEmail("updated_" + System.currentTimeMillis() + "@example.com"); // Уникальный email
         updateData.setLogin("updatedlogin");
-        updateData.setName("Updated Name");
+        updateData.setName(createdUser.getName());
         updateData.setBirthday(createdUser.getBirthday());
 
         User updatedUser = userController.updateUser(updateData);
 
-        assertEquals("updated@example.com", updatedUser.getEmail());
+        assertEquals(updateData.getEmail(), updatedUser.getEmail());
         assertEquals("updatedlogin", updatedUser.getLogin());
     }
 
